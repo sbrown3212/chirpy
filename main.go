@@ -10,7 +10,10 @@ func main() {
 	const port = "8080"
 
 	mux := http.NewServeMux()
-	mux.Handle("/", http.FileServer(http.Dir(filepathRoot)))
+
+	fs := http.FileServer(http.Dir(filepathRoot))
+	mux.Handle("/app/", http.StripPrefix("/app", fs))
+
 	mux.HandleFunc("/healthz", handlerReadiness)
 
 	svr := http.Server{
@@ -31,6 +34,6 @@ func handlerReadiness(w http.ResponseWriter, r *http.Request) {
 	msg := "OK"
 	_, err := w.Write([]byte(msg))
 	if err != nil {
-		log.Fatal("service unavailable")
+		log.Println("error writing /healthz response:", err)
 	}
 }
