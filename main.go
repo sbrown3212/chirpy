@@ -20,3 +20,9 @@ func main() {
 	log.Printf("Serving files from %s on port %s\n", filepathRoot, port)
 	log.Fatal(svr.ListenAndServe())
 }
+
+func handlerHealthZ(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(200)
+	// w.Write([]byte{"OK"}
+}
