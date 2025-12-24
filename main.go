@@ -11,6 +11,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir(filepathRoot)))
+	mux.HandleFunc("/healthz", handlerReadiness)
 
 	svr := http.Server{
 		Handler: mux,
@@ -21,8 +22,15 @@ func main() {
 	log.Fatal(svr.ListenAndServe())
 }
 
-func handlerHealthZ(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
+func handlerReadiness(w http.ResponseWriter, r *http.Request) {
+	_ = r
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(200)
-	// w.Write([]byte{"OK"}
+
+	msg := "OK"
+	_, err := w.Write([]byte(msg))
+	if err != nil {
+		log.Fatal("service unavailable")
+	}
 }
