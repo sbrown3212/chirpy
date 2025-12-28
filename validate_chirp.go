@@ -12,7 +12,7 @@ func handleValidateChirp(w http.ResponseWriter, r *http.Request) {
 		Body string `json:"body"`
 	}
 	type returnVal struct {
-		Cleansed string `json:"cleansed_body"`
+		Cleaned string `json:"cleaned_body"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -31,7 +31,7 @@ func handleValidateChirp(w http.ResponseWriter, r *http.Request) {
 
 	cleansed := cleanse(params.Body)
 
-	respondWithJSON(w, http.StatusOK, returnVal{Cleansed: cleansed})
+	respondWithJSON(w, http.StatusOK, returnVal{Cleaned: cleansed})
 }
 
 func cleanse(chirp string) string {
