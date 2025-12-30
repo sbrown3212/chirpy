@@ -27,13 +27,13 @@ func main() {
 	}
 
 	dbURL := os.Getenv("DB_URL")
-	db, err := sql.Open("postgres", dbURL)
+	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatal("unable to make db connection")
 	}
-	defer db.Close()
+	defer dbConn.Close()
 
-	dbQueries := database.New(db)
+	dbQueries := database.New(dbConn)
 
 	apiCfg := apiConfig{
 		db: dbQueries,
