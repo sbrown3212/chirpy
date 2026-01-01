@@ -9,6 +9,9 @@ func (cfg *apiConfig) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email string `json:"email"`
 	}
+	type response struct {
+		User
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -25,12 +28,13 @@ func (cfg *apiConfig) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "unable to create user in database", err)
 	}
-	responseUser := User{
-		ID:        dbUser.ID,
-		CreatedAt: dbUser.CreatedAt,
-		UpdatedAt: dbUser.CreatedAt,
-		Email:     dbUser.Email,
-	}
 
-	respondWithJSON(w, http.StatusCreated, responseUser)
+	respondWithJSON(w, http.StatusCreated, response{
+		User: User{
+			ID:        dbUser.ID,
+			CreatedAt: dbUser.CreatedAt,
+			UpdatedAt: dbUser.CreatedAt,
+			Email:     dbUser.Email,
+		},
+	})
 }
