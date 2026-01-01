@@ -11,6 +11,7 @@ func (cfg *apiConfig) handlerReset(w http.ResponseWriter, r *http.Request) {
 
 	if cfg.platform != "dev" {
 		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("Reset is only allowed in dev environment"))
 		return
 	}
 
@@ -21,10 +22,11 @@ func (cfg *apiConfig) handlerReset(w http.ResponseWriter, r *http.Request) {
 
 	err := cfg.db.DeleteUsers(r.Context())
 	if err != nil {
-		log.Printf("error deleting users from database: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to reset database: " + err.Error()))
 	}
 
-	msg := fmt.Sprintln("Reset successful")
+	msg := fmt.Sprintln("Hits reset to 0 and database reset to initial state.")
 
 	_, err = w.Write([]byte(msg))
 	if err != nil {
