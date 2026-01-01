@@ -15,8 +15,9 @@ import (
 )
 
 type apiConfig struct {
-	fileserverHits atomic.Int32
 	db             *database.Queries
+	platform       string
+	fileserverHits atomic.Int32
 }
 
 type User struct {
@@ -40,6 +41,8 @@ func main() {
 		log.Fatal("DB_URL must be set")
 	}
 
+	platform := os.Getenv("PLATFORM")
+
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatal("unable to make db connection")
@@ -49,7 +52,8 @@ func main() {
 	dbQueries := database.New(dbConn)
 
 	apiCfg := apiConfig{
-		db: dbQueries,
+		platform: platform,
+		db:       dbQueries,
 	}
 
 	fs := http.FileServer(http.Dir(filepathRoot))
@@ -75,7 +79,6 @@ func main() {
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("metrics middleware called")
 		cfg.fileserverHits.Add(1)
 		next.ServeHTTP(w, r)
 	})
