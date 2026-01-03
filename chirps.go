@@ -5,21 +5,25 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
-func handleValidateChirp(w http.ResponseWriter, r *http.Request) {
-	type parameters struct {
-		Body string `json:"body"`
+func handleChirps(w http.ResponseWriter, r *http.Request) {
+	type parameteres struct {
+		Body   string    `json:"body"`
+		UserID uuid.UUID `json:"user_id"`
 	}
-	type returnVal struct {
-		Cleaned string `json:"cleaned_body"`
+
+	type response struct {
+		Chirp string `json:"chirp"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
+	params := parameteres{}
 	err := decoder.Decode(&params)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "unable to decode parameters", err)
+		respondWithError(w, http.StatusInternalServerError, "error decoding parameters", err)
 		return
 	}
 
@@ -29,12 +33,14 @@ func handleValidateChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cleansed := cleanse(params.Body)
+	_ = cleanseChirp(params.Body)
 
-	respondWithJSON(w, http.StatusOK, returnVal{Cleaned: cleansed})
+	// TODO: create migration for chirps table
+	// TODO: create query to add chrip to database
+	// TODO: Save chirp to database
 }
 
-func cleanse(chirp string) string {
+func cleanseChirp(chirp string) string {
 	profanities := []string{"kerfuffle", "sharbert", "fornax"}
 
 	sliceOriginal := strings.Split(chirp, " ")
