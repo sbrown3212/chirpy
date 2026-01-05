@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"slices"
 	"strings"
 	"time"
 
@@ -20,7 +20,7 @@ type chirp struct {
 	UserID    uuid.UUID `json:"user_id"`
 }
 
-func (cfg *apiConfig) handleChirps(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handleCreateChirp(w http.ResponseWriter, r *http.Request) {
 	type parameteres struct {
 		Body   string    `json:"body"`
 		UserID uuid.UUID `json:"user_id"`
@@ -38,16 +38,14 @@ func (cfg *apiConfig) handleChirps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const maxLength = 140
-	if len(params.Body) > maxLength {
-		respondWithError(w, http.StatusBadRequest, "Chirp is too long", nil)
+	cleaned, err := validateChirp(params.Body)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
-	chirpBody := cleanseChirp(params.Body)
-
 	dbChirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{
-		Body:   chirpBody,
+		Body:   cleaned,
 		UserID: params.UserID,
 	})
 	if err != nil {
@@ -65,20 +63,29 @@ func (cfg *apiConfig) handleChirps(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func cleanseChirp(chirp string) string {
-	profanities := []string{"kerfuffle", "sharbert", "fornax"}
-
-	sliceOriginal := strings.Split(chirp, " ")
-
-	lower := strings.ToLower(chirp)
-	sliceLower := strings.Split(lower, " ")
-
-	for i, word := range sliceLower {
-		if slices.Contains(profanities, word) {
-			sliceOriginal[i] = "****"
-		}
+func validateChirp(body string) (string, error) {
+	const maxChirpLength = 140
+	if len(body) > maxChirpLength {
+		return "", fmt.Errorf("chirp is too long")
 	}
 
-	clean := strings.Join(sliceOriginal, " ")
-	return clean
+	badWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"formax":    {},
+	}
+	cleaned := cleanseChirpBody(body, badWords)
+	return cleaned, nil
+}
+
+func cleanseChirpBody(body string, badWords map[string]struct{}) string {
+	words := strings.Split(body, " ")
+	for i, word := range words {
+		lowerWord := strings.ToLower(word)
+		if _, ok := badWords[lowerWord]; ok {
+			words[i] = "****"
+		}
+	}
+	cleaned := strings.Join(words, " ")
+	return cleaned
 }
