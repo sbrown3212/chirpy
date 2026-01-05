@@ -2,21 +2,32 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/sbrown3212/chirpy/internal/database"
 )
 
-func handleChirps(w http.ResponseWriter, r *http.Request) {
+type chirp struct {
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"udpated_at"`
+	Body      string    `json:"body"`
+	UserID    uuid.UUID `json:"user_id"`
+}
+
+func (cfg *apiConfig) handleChirps(w http.ResponseWriter, r *http.Request) {
 	type parameteres struct {
 		Body   string    `json:"body"`
 		UserID uuid.UUID `json:"user_id"`
 	}
 
 	type response struct {
-		Chirp string `json:"chirp"`
+		chirp
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -33,11 +44,25 @@ func handleChirps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = cleanseChirp(params.Body)
+	chirpBody := cleanseChirp(params.Body)
 
-	// TODO: create migration for chirps table
-	// TODO: create query to add chrip to database
-	// TODO: Save chirp to database
+	dbChirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{
+		Body:   chirpBody,
+		UserID: params.UserID,
+	})
+	if err != nil {
+		log.Printf("error saving chirp to database: %s", err)
+	}
+
+	respondWithJSON(w, http.StatusCreated, response{
+		chirp: chirp{
+			ID:        dbChirp.UserID,
+			CreatedAt: dbChirp.CreatedAt,
+			UpdatedAt: dbChirp.UpdatedAt,
+			Body:      dbChirp.Body,
+			UserID:    dbChirp.UserID,
+		},
+	})
 }
 
 func cleanseChirp(chirp string) string {
