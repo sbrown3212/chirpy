@@ -27,7 +27,7 @@ func (cfg *apiConfig) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	email := params.Email
 	password := params.Password
-	hash, err := auth.HashedPassword(password)
+	hash, err := auth.HashPassword(password)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "failed to hash password", err)
 		return
