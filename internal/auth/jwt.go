@@ -34,7 +34,7 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("failed to get subject claim: %w", err)
 	}
-	userID, err := uuid.FromBytes([]byte(userIDString))
+	userID, err := uuid.Parse(userIDString)
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("failed to create uuid: %w", err)
 	}
