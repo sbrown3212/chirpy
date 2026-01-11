@@ -18,6 +18,7 @@ type apiConfig struct {
 	db             *database.Queries
 	platform       string
 	fileserverHits atomic.Int32
+	secret         string
 }
 
 type User struct {
@@ -52,9 +53,12 @@ func main() {
 
 	dbQueries := database.New(dbConn)
 
+	secret := os.Getenv("SECRET")
+
 	apiCfg := apiConfig{
 		platform: platform,
 		db:       dbQueries,
+		secret:   secret,
 	}
 
 	fs := http.FileServer(http.Dir(filepathRoot))
