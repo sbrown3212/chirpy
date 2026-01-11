@@ -1,6 +1,9 @@
 package auth
 
-import "testing"
+import (
+	"net/http"
+	"testing"
+)
 
 func TestCheckPasswordHash(t *testing.T) {
 	password1 := "correctPassword123!"
@@ -62,5 +65,20 @@ func TestCheckPasswordHash(t *testing.T) {
 				t.Errorf("CheckPasswordHash() expects %v, got %v", tt.matchPassword, match)
 			}
 		})
+	}
+}
+
+func TestGetBearerToken(t *testing.T) {
+	originalToken := "some-token-here"
+	headers := http.Header{}
+	headers.Set("Authorization", "Bearer "+originalToken)
+
+	returnedToken, err := GetBearerToken(headers)
+	if err != nil {
+		t.Errorf("GetBearerToken() unexpected error: %v", err)
+	}
+
+	if returnedToken != originalToken {
+		t.Errorf("GetBearerToken() Returned token: %v, Original token: %v", returnedToken, originalToken)
 	}
 }
