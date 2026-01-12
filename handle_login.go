@@ -24,19 +24,34 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&params)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "failed to decode parameters", err)
+		respondWithError(
+			w,
+			http.StatusInternalServerError,
+			"failed to decode parameters",
+			err,
+		)
 		return
 	}
 
 	dbUser, err := cfg.db.GetUserByEmail(r.Context(), params.Email)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Username/password is incorrect", err)
+		respondWithError(
+			w,
+			http.StatusUnauthorized,
+			"Username/password is incorrect",
+			err,
+		)
 		return
 	}
 
 	ok, err := auth.CheckPasswordHash(params.Password, dbUser.HashedPassword)
 	if !ok || err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Username/password is incorrect", err)
+		respondWithError(
+			w,
+			http.StatusUnauthorized,
+			"Username/password is incorrect",
+			err,
+		)
 		return
 	}
 
@@ -48,7 +63,13 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	refreshToken, err := auth.MakeRefreshToken()
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "failed to create refresh token: %v", err)
+		respondWithError(
+			w,
+			http.StatusInternalServerError,
+			"failed to create refresh token",
+			err,
+		)
+		return
 	}
 	_, err = cfg.db.CreateRefreshToken(
 		r.Context(),
@@ -58,7 +79,12 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "failed to save refresh token", err)
+		respondWithError(
+			w,
+			http.StatusInternalServerError,
+			"failed to save refresh token",
+			err,
+		)
 		return
 	}
 
