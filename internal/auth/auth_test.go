@@ -69,19 +69,6 @@ func TestCheckPasswordHash(t *testing.T) {
 }
 
 func TestGetBearerToken(t *testing.T) {
-	// originalToken := "some-token-here"
-	// headers := http.Header{}
-	// headers.Set("Authorization", "Bearer "+originalToken)
-	//
-	// returnedToken, err := GetBearerToken(headers)
-	// if err != nil {
-	// 	t.Errorf("GetBearerToken() unexpected error: %v", err)
-	// }
-	//
-	// if returnedToken != originalToken {
-	// 	t.Errorf("GetBearerToken() Returned token: %v, Original token: %v", returnedToken, originalToken)
-	// }
-
 	tests := []struct {
 		name      string
 		headers   http.Header
