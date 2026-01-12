@@ -1,12 +1,15 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/alexedwards/argon2id"
 )
+
+var ErrNoAuthHeaderIncluded = errors.New("no auth header included in request")
 
 func HashPassword(password string) (string, error) {
 	hash, err := argon2id.CreateHash(password, argon2id.DefaultParams)
@@ -27,17 +30,17 @@ func CheckPasswordHash(password, hash string) (bool, error) {
 }
 
 func GetBearerToken(headers http.Header) (string, error) {
-	bearerToken := headers.Get("Authorization")
+	authHeader := headers.Get("Authorization")
 
-	if bearerToken == "" {
-		return bearerToken, fmt.Errorf("authorization header not found")
+	if authHeader == "" {
+		return "", ErrNoAuthHeaderIncluded
 	}
 
-	split := strings.Split(bearerToken, " ")
-	if split[0] != "Bearer" {
+	splitAuth := strings.Split(authHeader, " ")
+	if splitAuth[0] != "Bearer" || len(splitAuth) < 2 {
 		return "", fmt.Errorf("invalid bearer token format")
 	}
 
-	token := split[1]
+	token := splitAuth[1]
 	return token, nil
 }
