@@ -45,7 +45,7 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		expirationTime = time.Duration(params.ExpiresInSeconds) * time.Second
 	}
 
-	token, err := auth.MakeJWT(dbUser.ID, cfg.secret, expirationTime)
+	token, err := auth.MakeJWT(dbUser.ID, cfg.jwtsecret, expirationTime)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "failed to make JWT", err)
 	}

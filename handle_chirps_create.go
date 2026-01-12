@@ -44,7 +44,7 @@ func (cfg *apiConfig) handleCreateChirp(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	userID, err := auth.ValidateJWT(bearerToken, cfg.secret)
+	userID, err := auth.ValidateJWT(bearerToken, cfg.jwtsecret)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "invalid JWT", err)
 		return
