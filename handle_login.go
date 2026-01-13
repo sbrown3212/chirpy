@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/sbrown3212/chirpy/internal/auth"
 	"github.com/sbrown3212/chirpy/internal/database"
@@ -55,7 +56,7 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, err := auth.MakeJWT(dbUser.ID, cfg.jwtsecret)
+	accessToken, err := auth.MakeJWT(dbUser.ID, cfg.jwtsecret, time.Hour)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "failed to make JWT", err)
 		return
