@@ -34,6 +34,7 @@ func (cfg *apiConfig) handleRefresh(w http.ResponseWriter, r *http.Request) {
 			"unauthorized",
 			err,
 		)
+		return
 	}
 
 	// expired
@@ -44,6 +45,7 @@ func (cfg *apiConfig) handleRefresh(w http.ResponseWriter, r *http.Request) {
 			"unauthorized",
 			nil,
 		)
+		return
 	}
 
 	// revoked
@@ -54,6 +56,7 @@ func (cfg *apiConfig) handleRefresh(w http.ResponseWriter, r *http.Request) {
 			"unauthorized",
 			nil,
 		)
+		return
 	}
 
 	// unexpected error
@@ -64,9 +67,10 @@ func (cfg *apiConfig) handleRefresh(w http.ResponseWriter, r *http.Request) {
 			"unexpected error",
 			err,
 		)
+		return
 	}
 
-	newAccessToken, err := auth.MakeJWT(dbRT.UserID, cfg.jwtsecret)
+	newAccessToken, err := auth.MakeJWT(dbRT.UserID, cfg.jwtsecret, time.Hour)
 	if err != nil {
 		respondWithError(
 			w,
@@ -74,6 +78,7 @@ func (cfg *apiConfig) handleRefresh(w http.ResponseWriter, r *http.Request) {
 			"failed to create new access token",
 			err,
 		)
+		return
 	}
 	respondWithJSON(w, http.StatusOK, response{
 		Token: newAccessToken,
