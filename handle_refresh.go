@@ -9,11 +9,6 @@ import (
 	"github.com/sbrown3212/chirpy/internal/auth"
 )
 
-var (
-	ErrRefreshTokenExpired = errors.New("refresh token is expired")
-	ErrRefreshTokenRevoked = errors.New("refresh token has been revoked")
-)
-
 func (cfg *apiConfig) handleRefresh(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		Token string `json:"token"`
