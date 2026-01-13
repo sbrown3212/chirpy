@@ -8,9 +8,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type TokenType string
+
+const (
+	TokenTypeAccess TokenType = "chirpy"
+)
+
 func MakeJWT(userID uuid.UUID, tokenSecret string, expiresIn time.Duration) (string, error) {
 	claims := &jwt.RegisteredClaims{
-		Issuer:    "chirpy",
+		Issuer:    string(TokenTypeAccess),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresIn)),
 		Subject:   userID.String(),
@@ -27,6 +33,14 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 	})
 	if err != nil {
 		return uuid.UUID{}, err
+	}
+
+	issuer, err := token.Claims.GetIssuer()
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+	if issuer != string(TokenTypeAccess) {
+		return uuid.UUID{}, fmt.Errorf("invalid issuer")
 	}
 
 	userIDString, err := token.Claims.GetSubject()
