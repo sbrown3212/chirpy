@@ -25,7 +25,7 @@ func (cfg *apiConfig) handleUpgradeUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if params.Event != "user.upgradeed" {
+	if params.Event != "user.upgraded" {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
