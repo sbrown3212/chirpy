@@ -33,13 +33,16 @@ type User struct {
 
 func main() {
 	const filepathRoot = "."
-	const port = "8080"
 
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("unable to load environment variables")
 	}
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("PORT must be set")
+	}
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("DB_URL must be set")
@@ -53,9 +56,9 @@ func main() {
 		log.Fatal("JWT_SECRET must be set")
 	}
 	polkaKey := os.Getenv("POLKA_KEY")
-	if polkaKey == "" {
-		log.Fatal("POLKA_KEY must be set")
-	}
+	// if polkaKey == "" {
+	// 	log.Fatal("POLKA_KEY must be set")
+	// }
 
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
