@@ -38,9 +38,25 @@ func GetBearerToken(headers http.Header) (string, error) {
 
 	splitAuth := strings.Split(authHeader, " ")
 	if splitAuth[0] != "Bearer" || len(splitAuth) < 2 {
-		return "", fmt.Errorf("invalid bearer token format")
+		return "", errors.New("invalid authorization header format")
 	}
 
 	token := splitAuth[1]
 	return token, nil
+}
+
+func GetAPIKey(headers http.Header) (string, error) {
+	authHeader := headers.Get("Authorization")
+
+	if authHeader == "" {
+		return "", ErrNoAuthHeaderIncluded
+	}
+
+	splitAuth := strings.Split(authHeader, " ")
+	if splitAuth[0] != "ApiKey" || len(splitAuth) < 2 {
+		return "", errors.New("invalid authorization header format")
+	}
+
+	apiKey := splitAuth[1]
+	return apiKey, nil
 }
