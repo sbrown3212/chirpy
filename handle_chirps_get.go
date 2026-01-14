@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"sort"
 
 	"github.com/google/uuid"
 )
@@ -12,6 +13,7 @@ func (cfg *apiConfig) handleGetChirps(w http.ResponseWriter, r *http.Request) {
 	var (
 		authorID       uuid.UUID
 		filterByAuthor bool
+		sortDir        string
 	)
 
 	authorIDString := r.URL.Query().Get("author_id")
@@ -26,6 +28,23 @@ func (cfg *apiConfig) handleGetChirps(w http.ResponseWriter, r *http.Request) {
 
 		authorID = parsedUUID
 		filterByAuthor = true
+	}
+
+	switch sortString := r.URL.Query().Get("sort"); sortString {
+	case "":
+		sortDir = "asc"
+	case "asc":
+		sortDir = "asc"
+	case "desc":
+		sortDir = "desc"
+	default:
+		respondWithError(
+			w,
+			http.StatusBadRequest,
+			"invalid value for sort query parameter",
+			nil,
+		)
+		return
 	}
 
 	dbChirps, err := cfg.db.GetAllChirps(r.Context())
@@ -46,6 +65,10 @@ func (cfg *apiConfig) handleGetChirps(w http.ResponseWriter, r *http.Request) {
 			Body:      dbChirp.Body,
 			UserID:    dbChirp.UserID,
 		})
+	}
+
+	if sortDir == "desc" {
+		sort.SliceStable(chirps, func(i, j int) bool { return chirps[i].CreatedAt.After(chirps[j].CreatedAt) })
 	}
 
 	respondWithJSON(w, http.StatusOK, chirps)
