@@ -19,6 +19,7 @@ type apiConfig struct {
 	platform       string
 	fileserverHits atomic.Int32
 	jwtsecret      string
+	polkaKey       string
 }
 
 type User struct {
@@ -43,8 +44,18 @@ func main() {
 	if dbURL == "" {
 		log.Fatal("DB_URL must be set")
 	}
-
 	platform := os.Getenv("PLATFORM")
+	if platform == "" {
+		log.Fatal("PLATFORM must be set")
+	}
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET must be set")
+	}
+	polkaKey := os.Getenv("POLKA_KEY")
+	if polkaKey == "" {
+		log.Fatal("POLKA_KEY must be set")
+	}
 
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
@@ -54,12 +65,11 @@ func main() {
 
 	dbQueries := database.New(dbConn)
 
-	secret := os.Getenv("JWT_SECRET")
-
 	apiCfg := apiConfig{
 		platform:  platform,
 		db:        dbQueries,
-		jwtsecret: secret,
+		jwtsecret: jwtSecret,
+		polkaKey:  polkaKey,
 	}
 
 	fs := http.FileServer(http.Dir(filepathRoot))
