@@ -56,9 +56,6 @@ func main() {
 		log.Fatal("JWT_SECRET must be set")
 	}
 	polkaKey := os.Getenv("POLKA_KEY")
-	// if polkaKey == "" {
-	// 	log.Fatal("POLKA_KEY must be set")
-	// }
 
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
