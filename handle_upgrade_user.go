@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/sbrown3212/chirpy/internal/auth"
 )
 
 func (cfg *apiConfig) handleUpgradeUser(w http.ResponseWriter, r *http.Request) {
@@ -17,9 +18,20 @@ func (cfg *apiConfig) handleUpgradeUser(w http.ResponseWriter, r *http.Request) 
 		} `json:"data"`
 	}
 
+	apiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "failed to find API key", err)
+		return
+	}
+
+	if apiKey != cfg.polkaKey {
+		respondWithError(w, http.StatusUnauthorized, "invalid API key", nil)
+		return
+	}
+
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "failed to decode parameters", err)
 		return
