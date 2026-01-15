@@ -22,8 +22,7 @@ type Chirp struct {
 
 func (cfg *apiConfig) handleCreateChirp(w http.ResponseWriter, r *http.Request) {
 	type parameteres struct {
-		Body  string `json:"body"`
-		Token string `json:"token"`
+		Body string `json:"body"`
 	}
 
 	type response struct {
