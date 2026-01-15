@@ -39,12 +39,14 @@ git clone https://github.com/sbrown3212/chirpy.git
 
 ### Environment Variables
 
-A file named `.env.example` should be in the root of the project. This is an
+There should be a file named `.env.example` at the root of the project. This is an
 example of what the Chirpy server expects the `.env` file to look like, as well
 as explanations of what values should be used.
 
 Rename this `.env.example` file to `.env`, or copy it to a file named `.env`.
 Then, update the variables as needed.
+
+> Be sure not to commit your .env file to version control.
 
 ### Run Database Migrations
 
@@ -74,144 +76,275 @@ go run .
 
 ## Endpoints
 
-### POST /users
+### POST /api/users
 
 Creates a new user.
 
-#### Request Body
+- Request Body
 
-```
-{
-  "email": "your_email@example.com",
-  "password": "your_password"
-}
-```
+  ```
+  {
+    "email": "alice@example.com",
+    "password": "your_password"
+  }
+  ```
 
-#### Successful Response (`201 Created`)
+- Successful Response (`201 Created`):
 
-```
-{
-  "id": "6f23ecb5-41d5-426a-bacc-1d13e96dab2b",
-  "created_at": "2026-01-01T12:00:00Z",
-  "updated_at": "2026-01-01T12:00:00Z",
-  "email": "alice@example.com",
-  "is_chirpy_red": false
-}
-```
+  ```
+  {
+    "id": "6f23ecb5-41d5-426a-bacc-1d13e96dab2b",
+    "created_at": "2026-01-01T12:00:00Z",
+    "updated_at": "2026-01-01T12:00:00Z",
+    "email": "alice@example.com",
+    "is_chirpy_red": false
+  }
+  ```
 
-#### Error Responses
+- Error Responses
+  - `400 Bad Request`
+  - `500 Internal Server Error`
 
-- `400 Bad Request`
-- `500 Internal Server Error`
-
-### PUT /users
+### PUT /api/users
 
 Updates email and password of the current user. Requires a valid JWT access
 token.
 
-#### Request Header
+- Request Header
 
-```
-Authorization: Bearer <access_token>
-```
+  ```
+  Authorization: Bearer <access_token>
+  ```
 
-#### Request body
+- Request Body
 
-```
-{
-  "email": "your_existing_or_new_email@example.com",
-  "password": "your_existing_or_new_password"
-}
-```
+  ```
+  {
+    "email": "alice2@example.com",
+    "password": "new_password"
+  }
+  ```
 
-- Response (200):
+- Successful Response (`200 OK`):
 
-```
-TODO
-```
+  ```
+  {
+    "id": "6f23ecb5-41d5-426a-bacc-1d13e96dab2b",
+    "created_at": "2026-01-01T12:00:00Z",
+    "updated_at": "2026-01-01T12:00:00Z",
+    "email": "alice@example.com",
+    "is_chirpy_red": false
+  }
+  ```
 
-- TODO: failed responses
+- Error Responses
+  - `401 Unauthorized`
+  - `500 Internal Server Error`
 
-### POST /login
+### POST /api/login
 
-Logs in a user.
+Logs in a user. Response contains user information and JWT access and refresh
+tokens.
+
+- Request Header
+
+  ```
+  Authorization: Bearer <access_token>
+  ```
 
 - Request body:
 
-```
-{
-  "email": "your_email@example.com",
-  "password": "your_password"
-}
-```
+  ```
+  {
+    "email": "your_email@example.com",
+    "password": "your_password"
+  }
+  ```
 
-- Response (200)
+- Successful Response (`200 OK`):
 
-```
-TODO
-```
+  ```
+  {
+      "id": "6f23ecb5-41d5-426a-bacc-1d13e96dab2b",
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "email": "<alice@example.com>",
+      "is_chirpy_red": false,
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access-token-part.signature-part",
+      "refresh_token": "random-256-bit-string"
+  }
+  ```
 
-- TODO: failed responses
+  > For brevity, the example tokens above are truncated.
 
-### POST /refresh
+- Error Responses:
+  - `401 Unauthorized`
+  - `500 Internal Server Error`
 
-Returns a new access token.
+### POST /api/refresh
 
-- TODO: request body (not required???)
+Returns a new access token. Requires a valid refresh token in the Authorization
+header.
 
-- TODO: response bodies
+- Request Header
 
-### POST /revoke
+  ```
+  Authorization: Bearer <refresh_token>
+  ```
 
-Revokes a refresh token.
+- Request Body: none
 
-- TODO: request body (not required???)
+- Successful Response (`200 OK`):
 
-- TODO: response bodies
+  ```
+  {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access-token-part.signature-part"
+  }
+  ```
 
-### GET /chirps
+  > For brevity, the example tokens above are truncated.
+
+- Error Responses:
+  - `401 Unauthorized`
+  - `500 Internal Server Error`
+
+### POST /api/revoke
+
+Revokes a refresh token. Requires a valid refresh token in the Authorization
+header.
+
+- Request Header
+
+  ```
+  Authorization: Bearer <refresh_token>
+  ```
+
+- Request Body: none
+
+- Successful Response (`204 No Content`): no body
+
+- Error Responses:
+  - `401 Unauthorized`
+  - `500 Internal Server Error`
+
+### GET /api/chirps
 
 Returns a list of chirps.
 
 - Query Parameters
-  - `author_id` - filter chirps by author id
+  - `author_id` - filter chirps by author's user id
   - `sort` - sorts response list of chirps, and accepts the following values:
-    - `asc` - ascending by create date
+    - `asc` - ascending by create date (default)
     - `desc` - descending by create date
 
-- TODO: response bodies
+- Request Body: none
 
-### GET /chirps/{id}
+- Successful Response (`200 OK`):
+
+  ```
+  [
+    {
+      "id": "fdeb872f-c649-4e8e-a03e-41970d724f67",
+      "created_at": "2026-01-15T15:48:01.817181Z",
+      "udpated_at": "2026-01-15T15:48:01.817181Z",
+      "body": "Hello from Chirpy!",
+      "user_id": "94b13964-b8ab-4027-a43a-7fb0f94cea6e"
+    },
+    {
+      "id": "722c9d67-aa68-4287-97f7-fb2c8c7d7b0b",
+      "created_at": "2026-01-15T15:48:01.830566Z",
+      "udpated_at": "2026-01-15T15:48:01.830566Z",
+      "body": "Hello again!",
+      "user_id": "94b13964-b8ab-4027-a43a-7fb0f94cea6e"
+    },
+    {
+      "id": "28fe52eb-ca3c-4e96-9d8e-a419ae1d5c82",
+      "created_at": "2026-01-15T15:48:01.843303Z",
+      "udpated_at": "2026-01-15T15:48:01.843303Z",
+      "body": "Hello a third time!",
+      "user_id": "94b13964-b8ab-4027-a43a-7fb0f94cea6e"
+    }
+  ]
+  ```
+
+- Error Responses:
+  - `400 Bad Request`
+  - `404 Not Found`
+  - `500 Internal Server Error`
+
+### GET /api/chirps/{id}
 
 Returns a single chirp by ID.
 
 - Path Parameter:
   - `id` - chirp ID
 
-- TODO: response bodies
+- Request Body: none
 
-### POST /chirps
+- Successful Response (`200 OK`):
 
-Creates a new chirp.
+  ```
+  {
+    "id": "4b3cab61-d91e-4024-9a42-1365e22953f5",
+    "created_at": "2026-01-01T12:00:00Z",
+    "udpated_at": "2026-01-01T12:00:00Z",
+    "body": "Hello from Chirpy!",
+    "user_id": "6f23ecb5-41d5-426a-bacc-1d13e96dab2b"
+  }
+  ```
+
+- Error Responses:
+  - `400 Bad Request`
+  - `404 Not Found`
+  - `500 Internal Server Error`
+
+### POST /api/chirps
+
+Creates a new chirp. Requires a valid JWT access token in Authorization header.
 
 - Request body:
 
-```
-{
-TODO
-}
-```
+  ```
+  {
+    "body": "Hello from Chirpy!"
+  }
+  ```
 
-- TODO: response bodies
+- Successful Response (`201 Created`)
+
+  ```
+  {
+    "id": "4b3cab61-d91e-4024-9a42-1365e22953f5",
+    "created_at": "2026-01-01T12:00:00Z",
+    "udpated_at": "2026-01-01T12:00:00Z",
+    "body": "Hello from Chirpy!",
+    "user_id": "6f23ecb5-41d5-426a-bacc-1d13e96dab2b"
+  }
+  ```
+
+- Error Responses:
+  - `400 Bad Request`
+  - `401 Unauthorized`
+  - `500 Internal Server Error`
 
 ### DELETE /chirps/{id}
 
-Deletes a chirp by ID.
+Deletes a chirp by ID. Requires a valid JWT access token in Authorization
+header.
 
 - Path Parameters:
   - `id` - chirp ID
 
-- TODO: response bodies
+- Request Body: none
+
+- Successful Response (`204 No Content`): no body
+
+- Error Responses:
+  - `400 Bad Request`
+  - `401 Unauthorized`
+  - `403 Forbidden`
+  - `404 Not Found`
+  - `500 Internal Server Error`
 
 ## Error Format
 
