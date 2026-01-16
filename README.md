@@ -32,6 +32,28 @@ for authentication
 - Password hashing: `Argon2id`
 - Configuration: `godotenv` (loading environment variables)
 
+## Authentication Overview
+
+Chirpy uses JSON Web Tokens (JWTs) for authenticated requests and a separate
+refresh token to obtain new access tokens without re-entering credentials.
+
+- **Access tokens (JWTs)**
+  - Issued on login.
+  - Included in the `Authorization: Bearer <access_token>` header for protected
+  endpoints.  
+  - Contain user identity and an expiration time.
+  - Are not stored server-side; they are verified using a shared secret.
+
+- **Refresh tokens (opaque strings)**
+  - Issued on login along with the access token.
+  - Long-lived, 256-bit random strings stored in PostgreSQL.
+  - Used with `POST /api/refresh` to obtain a new access token.
+  - Can be revoked with `POST /api/revoke`, which invalidates the stored token.
+
+This design keeps access tokens short-lived and stateless while allowing
+sessions to continue using refresh tokens, which can be revoked by the server as
+needed.
+
 ## Tradeoffs / Limitations
 
 Chirpy’s authentication system is intentionally simplified for learning purposes:
