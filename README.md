@@ -10,7 +10,9 @@ for how to wire Go and Postgres together in a production-style layout.
 ## Learning Project Disclaimer
 
 This project was built as part of a guided learning course from
-[Boot.dev](https://boot.dev) and is not intended for production use.
+[Boot.dev](https://boot.dev) and is not intended for production use. See
+[Tradeoffs / Limitations](#tradeoffs--limitations) for details on what has been
+simplified.
 
 ## Features
 
@@ -29,6 +31,21 @@ for authentication
 - Auth: JWT access tokens and opaque refresh tokens
 - Password hashing: `Argon2id`
 - Configuration: `godotenv` (loading environment variables)
+
+## Tradeoffs / Limitations
+
+Chirpy’s authentication system is intentionally simplified for learning purposes:
+
+- Refresh tokens are long-lived and are **not rotated** on use (new refresh
+token is only issued at login).
+- Refresh tokens are stored server-side in PostgreSQL and can be revoked, but
+there is no detection of token reuse or theft.
+- The API is designed for local development and educational use only and has not
+been hardened for production (rate limiting, auditing, monitoring, etc. are out
+of scope).
+
+These tradeoffs keep the codebase small and focused on core concepts like
+RESTful routing, JWT access tokens, and basic token revocation.
 
 ## Setup
 
